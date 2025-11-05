@@ -1,0 +1,306 @@
+# Quick Start Guide - Professional Telemetry Analyzer
+
+## What You Have
+
+A complete, production-ready motorsport telemetry analysis application with:
+- ✅ Real-time data streaming (10 Hz)
+- ✅ Offline analysis (up to 100 Hz)
+- ✅ GPS-based lap segmentation
+- ✅ FuelTech CSV import
+- ✅ 6 specialized analysis views
+- ✅ Professional dark theme
+- ✅ Native Windows GUI
+
+## Immediate Next Steps
+
+### 1. Installation (5 minutes)
+
+**Windows Setup:**
+```bash
+# Double-click or run:
+install.bat
+
+# This will:
+# - Check Python version (3.8+ required)
+# - Install all dependencies
+# - Verify installation
+```
+
+**Manual Installation:**
+```bash
+pip install -r requirements.txt
+```
+
+### 2. First Run (1 minute)
+
+**Launch the application:**
+```bash
+# Double-click or run:
+run_analyzer.bat
+
+# Or directly:
+python telemetry_analyzer.py
+```
+
+The main window should appear with 6 analysis tabs ready.
+
+### 3. Try the Examples (5 minutes)
+
+**Generate synthetic test data:**
+```bash
+python example_usage.py
+```
+
+This will:
+- Create a 5-lap synthetic session
+- Generate realistic telemetry data
+- Save to `sessions/synthetic_YYYYMMDD_HHMMSS/`
+- Demonstrate all major features
+
+**Then in the analyzer:**
+1. File → Open Log
+2. Navigate to the synthetic session folder
+3. Open `telemetry.tlog`
+4. Analysis → Configure Track (auto-detect)
+5. Analysis → Segment Laps
+6. Explore all 6 analysis tabs!
+
+### 4. Import Your FuelTech Data (2 minutes)
+
+**With the LOG_EXAMPLE.csv:**
+```bash
+# In the analyzer:
+File → Import FuelTech CSV...
+# Select: LOG_EXAMPLE.csv
+```
+
+The data will be automatically converted and displayed.
+
+### 5. Connect Live Telemetry
+
+**If you have telemetry hardware:**
+```bash
+# In the analyzer:
+Session → Connect to Telemetry...
+# Enter: COM3 (or your port)
+
+Session → Start Recording
+# Drive your laps
+
+Session → Stop Recording
+```
+
+## File Overview
+
+### Core Application
+- **telemetry_analyzer.py** - Main application (1800+ lines)
+- **telemetry_service.py** - Serial decoder (from your project)
+- **requirements.txt** - Python dependencies
+
+### Documentation
+- **README.md** - Complete user guide (400+ lines)
+- **DEVELOPER_GUIDE.md** - Architecture & extension guide (600+ lines)
+- **Quick_Start.txt** - This file
+
+### Utilities
+- **install.bat** - Windows installation script
+- **run_analyzer.bat** - Application launcher
+- **example_usage.py** - Demonstration script (400+ lines)
+- **example_tracks.json** - Track configuration templates
+
+## Key Features by Tab
+
+### 1. Primary View
+- 4-Graph stacked layout
+- RPM, Speed+Gear, TPS, G-Forces
+- Time-window slider
+- Real-time and playback modes
+
+### 2. Dashboard
+- Large RPM/Speed displays
+- GG Diagram (g-force visualization)
+- Live gauge updates
+
+### 3. Mixture Tuning
+- RPM vs MAP
+- O2 vs Lambda Correction
+- Injection time (Bank A/B)
+- Lambda scatter plot
+
+### 4. Histograms
+- RPM distribution
+- TPS distribution
+- Operating point analysis
+
+### 5. Suspension
+- 4-corner shock travel
+- Wheel speed comparison
+- Ready for FFT analysis
+
+### 6. Track Map
+- GPS vector track
+- Speed-based coloring
+- Brake/TPS markers
+- No internet required
+
+## Common Tasks
+
+### Analyze a Recorded Session
+1. File → Open Log
+2. Select .tlog file
+3. Analysis → Configure Track
+4. Analysis → Segment Laps
+5. Click laps in sidebar to view
+
+### Compare Two Laps
+1. Load session with laps
+2. Click first lap in sidebar
+3. Ctrl+Click second lap
+4. View overlaid data (future enhancement)
+
+### Export Plot Data
+1. Right-click any plot
+2. Select "Export..."
+3. Choose CSV or image format
+
+### Configure Display
+1. Adjust splitters between plots
+2. Right-click plots for zoom options
+3. Use time slider for window control
+4. Settings persist automatically
+
+## Tips & Tricks
+
+### Performance
+- Reduce visible time window for smoother plots
+- Use decimation for large files (automatic)
+- Close unused analysis tabs
+
+### Analysis
+- Use histogram view to find optimal operating ranges
+- GG diagram shows traction limits
+- Track map reveals braking points
+
+### Data Quality
+- GPS tolerance of 50m works for most tracks
+- Increase tolerance for long tracks (>5km)
+- Check for GPS signal quality in data
+
+## Troubleshooting
+
+### "Module not found" Error
+```bash
+pip install -r requirements.txt
+```
+
+### "Access Denied" on COM Port
+- Close other applications using the port
+- Check Device Manager for correct port number
+
+### Plots Not Updating
+- Check that data contains expected channels
+- Verify timestamp column exists
+- Try different analysis tab
+
+### Memory Issues
+- Large files (>100MB) may be slow
+- Close and reopen application
+- Consider splitting large sessions
+
+## Technical Specifications
+
+**Performance:**
+- Real-time: 10 Hz streaming
+- Offline: 100 Hz analysis
+- Display: 10 Hz updates
+- File format: ~400 bytes/frame
+
+**Requirements:**
+- Windows 10/11 (64-bit)
+- Python 3.8+
+- 4 GB RAM (8 GB recommended)
+- 1920x1080 display minimum
+
+**Data Format:**
+- Binary .tlog (efficient)
+- CSV import (FuelTech)
+- JSON metadata
+- NumPy arrays (internal)
+
+## Support Resources
+
+### Documentation
+1. README.md - User guide
+2. DEVELOPER_GUIDE.md - Architecture
+3. example_usage.py - Code examples
+
+### Example Data
+1. Run example_usage.py - Synthetic data
+2. LOG_EXAMPLE.csv - Real FuelTech data
+3. example_tracks.json - Track templates
+
+## What's Next?
+
+### Immediate
+- [x] Install dependencies
+- [x] Run examples
+- [x] Load sample data
+- [ ] Connect your hardware
+- [ ] Record a session
+- [ ] Analyze laps
+
+### Short-term
+- [ ] Configure your track
+- [ ] Fine-tune display preferences
+- [ ] Export analysis results
+- [ ] Share findings with team
+
+### Long-term
+- [ ] Build lap comparison features
+- [ ] Add custom analysis views
+- [ ] Create custom importers
+- [ ] Extend with plugins
+
+## Success Criteria
+
+You're ready when you can:
+1. ✓ Launch the application
+2. ✓ Load a telemetry file
+3. ✓ Configure a track
+4. ✓ Segment laps automatically
+5. ✓ View all 6 analysis tabs
+6. ✓ Navigate through data smoothly
+
+## Getting Help
+
+If you encounter issues:
+1. Check Troubleshooting section
+2. Review error messages carefully
+3. Verify all dependencies installed
+4. Check Python version (3.8+)
+5. Review DEVELOPER_GUIDE.md for details
+
+## Final Checklist
+
+Before your first session:
+- [x] Python 3.8+ installed
+- [ ] Dependencies installed (run install.bat)
+- [ ] Application launches successfully
+- [ ] Example data loads correctly
+- [ ] All 6 tabs visible
+- [ ] Track configuration works
+- [ ] Lap segmentation functions
+
+---
+
+**Quick Reference:**
+- Install: `install.bat`
+- Run: `run_analyzer.bat` or `python telemetry_analyzer.py`
+- Examples: `python example_usage.py`
+- Help: See README.md
+
+**Total Development:** 1800+ lines of production code  
+**Documentation:** 1000+ lines of guides and examples  
+**Status:** Production-ready ✓
+
+Good luck with your telemetry analysis! 🏁

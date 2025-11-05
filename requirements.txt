@@ -1,0 +1,21 @@
+# Professional Telemetry Analyzer Requirements
+# Python 3.8+ required
+
+# GUI Framework
+PyQt5>=5.15.0
+
+# Numerical and Scientific Computing
+numpy>=1.20.0
+scipy>=1.7.0
+
+# Data Analysis
+pandas>=1.3.0
+
+# Plotting and Visualization
+pyqtgraph>=0.12.0
+
+# Serial Communication (for live telemetry)
+pyserial>=3.5
+
+# Additional utilities
+python-dateutil>=2.8.0
