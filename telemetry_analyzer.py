@@ -826,8 +826,9 @@ class SerialConfigDialog(QDialog):
 # Track Configuration Dialog
 # ============================================================================
 
+class TrackConfigDialog(QDialog):
     """Dialog for configuring track parameters"""
-    
+
     def __init__(self, data: Optional[np.ndarray], field_names: List[str], parent=None):
         super().__init__(parent)
         self.data = data
