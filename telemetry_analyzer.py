@@ -296,10 +296,10 @@ class FuelTechImporter:
     def import_csv(filepath: str) -> Tuple[List[str], np.ndarray, Dict]:
         """Import FuelTech CSV file"""
         import pandas as pd
-        
+
         # Read CSV
         df = pd.read_csv(filepath)
-        
+
         # Map column names
         mapped_columns = {}
         for col in df.columns:
@@ -308,22 +308,44 @@ class FuelTechImporter:
             else:
                 # Keep original name if no mapping
                 mapped_columns[col] = col.lower().replace(' ', '_')
-                
+
         df = df.rename(columns=mapped_columns)
-        
+
+        # Convert string values to numeric
+        def convert_value(val):
+            """Convert string values to numeric"""
+            if pd.isna(val):
+                return 0.0
+            if isinstance(val, str):
+                val_upper = val.upper().strip()
+                if val_upper in ['OFF', 'DESLIGADO', 'NO', 'FALSE']:
+                    return 0.0
+                elif val_upper in ['ON', 'LIGADO', 'YES', 'TRUE']:
+                    return 1.0
+                else:
+                    try:
+                        return float(val)
+                    except ValueError:
+                        return 0.0
+            return float(val)
+
+        # Apply conversion to all columns
+        for col in df.columns:
+            df[col] = df[col].apply(convert_value)
+
         # Extract field names (exclude timestamp)
         field_names = [c for c in df.columns if c != 'timestamp']
-        
+
         # Convert to numpy array
         data = df.to_numpy(dtype=np.float32)
-        
+
         # Metadata
         metadata = {
             'source': 'FuelTech CSV Import',
             'filename': os.path.basename(filepath),
             'import_time': datetime.now().isoformat()
         }
-        
+
         return field_names, data, metadata
 
 
@@ -436,11 +458,22 @@ class SerialConfigDialog(QDialog):
         self.parity = 'N'
         self.stopbits = 1
         self.timeout = 1.0
-        
+
         self.setWindowTitle("Serial Connection Configuration")
         self.setModal(True)
         self.setMinimumWidth(500)
-        
+
+        # Set dialog background to dark
+        self.setStyleSheet("""
+            QDialog {
+                background-color: #2A2A2A;
+                color: #DCDCDC;
+            }
+            QLabel {
+                color: #DCDCDC;
+            }
+        """)
+
         self.init_ui()
         self.scan_ports()
         
@@ -834,10 +867,21 @@ class TrackConfigDialog(QDialog):
         self.data = data
         self.field_names = field_names
         self.track = None
-        
+
         self.setWindowTitle("Track Configuration")
         self.setModal(True)
         self.resize(600, 400)
+
+        # Set dialog background to dark
+        self.setStyleSheet("""
+            QDialog {
+                background-color: #2A2A2A;
+                color: #DCDCDC;
+            }
+            QLabel {
+                color: #DCDCDC;
+            }
+        """)
         
         layout = QVBoxLayout()
         
@@ -1826,17 +1870,21 @@ class TelemetryAnalyzer(QMainWindow):
         # Create 4 stacked plots
         self.rpm_plot = TelemetryPlotWidget("Engine RPM", "RPM")
         self.rpm_plot.add_channel('rpm', 'r', 2)
-        
+        self.rpm_plot.setYRange(0, 8000)
+
         self.speed_plot = TelemetryPlotWidget("Vehicle Speed", "km/h")
         self.speed_plot.add_channel('speed', 'c', 2)
         self.speed_plot.add_channel('gear', 'y', 1)
-        
+        self.speed_plot.setYRange(0, 300)
+
         self.tps_plot = TelemetryPlotWidget("Throttle Position", "%")
         self.tps_plot.add_channel('tps', 'g', 2)
-        
+        self.tps_plot.setYRange(0, 100)
+
         self.g_plot = TelemetryPlotWidget("G-Forces", "g")
         self.g_plot.add_channel('g_accel', 'r', 2)
         self.g_plot.add_channel('g_lateral', 'b', 2)
+        self.g_plot.setYRange(-3, 3)
         
         # Add plots to layout
         splitter = QSplitter(Qt.Vertical)
@@ -1892,25 +1940,28 @@ class TelemetryAnalyzer(QMainWindow):
         """Create mixture tuning analysis view"""
         tab = QWidget()
         layout = QVBoxLayout()
-        
+
         # Create plots
         splitter = QSplitter(Qt.Vertical)
-        
-        rpm_map_plot = TelemetryPlotWidget("RPM vs MAP", "MAP (kPa)")
-        rpm_map_plot.add_channel('map', 'y', 1)
-        
-        o2_lambda_plot = TelemetryPlotWidget("O2 vs Lambda Correction", "%")
-        o2_lambda_plot.add_channel('exhaust_o2', 'g', 2)
-        o2_lambda_plot.add_channel('lambda_correction', 'r', 2)
-        
-        inj_time_plot = TelemetryPlotWidget("Injection Time", "ms")
-        inj_time_plot.add_channel('inj_time_bank_a', 'c', 2)
-        inj_time_plot.add_channel('inj_time_bank_b', 'm', 2)
-        
-        splitter.addWidget(rpm_map_plot)
-        splitter.addWidget(o2_lambda_plot)
-        splitter.addWidget(inj_time_plot)
-        
+
+        self.rpm_map_plot = TelemetryPlotWidget("RPM vs MAP", "MAP (kPa)")
+        self.rpm_map_plot.add_channel('map', 'y', 1)
+        self.rpm_map_plot.setYRange(0, 200)
+
+        self.o2_lambda_plot = TelemetryPlotWidget("O2 vs Lambda Correction", "%")
+        self.o2_lambda_plot.add_channel('exhaust_o2', 'g', 2)
+        self.o2_lambda_plot.add_channel('lambda_correction', 'r', 2)
+        self.o2_lambda_plot.setYRange(-20, 20)
+
+        self.inj_time_plot = TelemetryPlotWidget("Injection Time", "ms")
+        self.inj_time_plot.add_channel('inj_time_bank_a', 'c', 2)
+        self.inj_time_plot.add_channel('inj_time_bank_b', 'm', 2)
+        self.inj_time_plot.setYRange(0, 20)
+
+        splitter.addWidget(self.rpm_map_plot)
+        splitter.addWidget(self.o2_lambda_plot)
+        splitter.addWidget(self.inj_time_plot)
+
         layout.addWidget(splitter)
         tab.setLayout(layout)
         self.tab_widget.addTab(tab, "Mixture Tuning")
@@ -1946,24 +1997,26 @@ class TelemetryAnalyzer(QMainWindow):
         """Create suspension analysis view"""
         tab = QWidget()
         layout = QVBoxLayout()
-        
+
         splitter = QSplitter(Qt.Vertical)
-        
-        shock_plot = TelemetryPlotWidget("Shock Travel", "mm")
-        shock_plot.add_channel('shock_fl', 'r', 2)
-        shock_plot.add_channel('shock_fr', 'g', 2)
-        shock_plot.add_channel('shock_rl', 'b', 2)
-        shock_plot.add_channel('shock_rr', 'y', 2)
-        
-        wheel_speed_plot = TelemetryPlotWidget("Wheel Speeds", "km/h")
-        wheel_speed_plot.add_channel('wheel_speed_fl', 'r', 2)
-        wheel_speed_plot.add_channel('wheel_speed_fr', 'g', 2)
-        wheel_speed_plot.add_channel('wheel_speed_rl', 'b', 2)
-        wheel_speed_plot.add_channel('wheel_speed_rr', 'y', 2)
-        
-        splitter.addWidget(shock_plot)
-        splitter.addWidget(wheel_speed_plot)
-        
+
+        self.shock_plot = TelemetryPlotWidget("Shock Travel", "mm")
+        self.shock_plot.add_channel('shock_fl', 'r', 2)
+        self.shock_plot.add_channel('shock_fr', 'g', 2)
+        self.shock_plot.add_channel('shock_rl', 'b', 2)
+        self.shock_plot.add_channel('shock_rr', 'y', 2)
+        self.shock_plot.setYRange(-50, 50)
+
+        self.wheel_speed_plot = TelemetryPlotWidget("Wheel Speeds", "km/h")
+        self.wheel_speed_plot.add_channel('wheel_speed_fl', 'r', 2)
+        self.wheel_speed_plot.add_channel('wheel_speed_fr', 'g', 2)
+        self.wheel_speed_plot.add_channel('wheel_speed_rl', 'b', 2)
+        self.wheel_speed_plot.add_channel('wheel_speed_rr', 'y', 2)
+        self.wheel_speed_plot.setYRange(0, 300)
+
+        splitter.addWidget(self.shock_plot)
+        splitter.addWidget(self.wheel_speed_plot)
+
         layout.addWidget(splitter)
         tab.setLayout(layout)
         self.tab_widget.addTab(tab, "Suspension")
@@ -2338,15 +2391,47 @@ class TelemetryAnalyzer(QMainWindow):
         if rpm is not None:
             y, x = np.histogram(rpm, bins=50)
             self.rpm_hist_plot.clear()
-            self.rpm_hist_plot.plot(x, y, stepMode=True, fillLevel=0, 
+            self.rpm_hist_plot.plot(x, y, stepMode=True, fillLevel=0,
                                    brush=(255, 255, 0, 150))
-                                   
+
         if tps is not None:
             y, x = np.histogram(tps, bins=50)
             self.tps_hist_plot.clear()
-            self.tps_hist_plot.plot(x, y, stepMode=True, fillLevel=0, 
+            self.tps_hist_plot.plot(x, y, stepMode=True, fillLevel=0,
                                    brush=(0, 255, 255, 150))
-                                   
+
+        # Update mixture tuning plots
+        map_data = get_channel('map')
+        if map_data is not None:
+            self.rpm_map_plot.update_channel('map', time_data, map_data)
+
+        o2 = get_channel('exhaust_o2')
+        if o2 is not None:
+            self.o2_lambda_plot.update_channel('exhaust_o2', time_data, o2)
+
+        lambda_corr = get_channel('lambda_correction')
+        if lambda_corr is not None:
+            self.o2_lambda_plot.update_channel('lambda_correction', time_data, lambda_corr)
+
+        inj_a = get_channel('inj_time_bank_a')
+        if inj_a is not None:
+            self.inj_time_plot.update_channel('inj_time_bank_a', time_data, inj_a)
+
+        inj_b = get_channel('inj_time_bank_b')
+        if inj_b is not None:
+            self.inj_time_plot.update_channel('inj_time_bank_b', time_data, inj_b)
+
+        # Update suspension plots
+        for shock in ['shock_fl', 'shock_fr', 'shock_rl', 'shock_rr']:
+            shock_data = get_channel(shock)
+            if shock_data is not None:
+                self.shock_plot.update_channel(shock, time_data, shock_data)
+
+        for wheel in ['wheel_speed_fl', 'wheel_speed_fr', 'wheel_speed_rl', 'wheel_speed_rr']:
+            wheel_data = get_channel(wheel)
+            if wheel_data is not None:
+                self.wheel_speed_plot.update_channel(wheel, time_data, wheel_data)
+
     def rpm_to_color(self, rpm: np.ndarray) -> np.ndarray:
         """Convert RPM values to colors"""
         # Normalize RPM to 0-1
